@@ -12,15 +12,12 @@ import {
   FormControl,
   Select,
   MenuItem,
-  IconButton,
   CircularProgress,
   Snackbar,
   Box,
   InputAdornment,
 } from "@material-ui/core";
 import MuiAlert from "@material-ui/lab/Alert";
-
-import { CloseOutlined as CloseOutlinedIcon } from "@material-ui/icons";
 
 import { PdfPreview } from "./";
 import { makeStyles } from "@material-ui/core/styles";
@@ -59,7 +56,7 @@ import {
 } from "../graphql/generated";
 
 import convertMStoTimeLeft from "../common/convertMSToTimeLeft";
-import { gql } from "@apollo/client";
+import messageFragment from '../graphql/schema'
 
 import TextField from "./TextField";
 import ChipsInput from "./ChipsInput";
@@ -67,6 +64,9 @@ import { ReactComponent as DropdownIcon } from "../icons/dropdownRegular.svg";
 import NumberFormatTime from "../common/NumberFormatTime";
 import { Link } from "react-router-dom";
 import EventDeleteModal from "./EventDeleteModal";
+import IconBtn from "./IconBtn";
+
+import theme from '../common/theme'
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -84,9 +84,6 @@ const useStyles = makeStyles((theme) => ({
   },
   icon: {
     color: "#707070",
-  },
-  closeIcon: {
-    color: "#D9D9D9",
   },
   addReminder: {
     color: "#B7B7B7",
@@ -154,10 +151,6 @@ const useStyles = makeStyles((theme) => ({
   },
   chipRoot: {
     background: "#ffffff",
-  },
-  iconButtonRoot: {
-    padding: 0,
-    marginBottom: theme.spacing(0.5),
   },
   switchRoot: {
     width: 48,
@@ -265,15 +258,6 @@ export const createLink = (
     return `/inbox/${userEmail}/${messageId}`;
   }
 };
-
-const messageFragment = gql`
-  fragment MyMessage on Message {
-    id
-    event {
-      id #id should be for correct render
-    }
-  }
-`;
 
 const EventDetails = ({
   event,
@@ -878,14 +862,7 @@ const EventDetails = ({
           <Grid container justify="space-between" alignItems="center">
             <Grid item>{message ? "Create new event" : "Event Details"}</Grid>
             <Grid item>
-              <IconButton
-                classes={{
-                  root: classes.iconButtonRoot,
-                }}
-                onClick={() => setOpen(false)}
-              >
-                <CloseOutlinedIcon />
-              </IconButton>
+              <IconBtn onClick={() => setOpen(false)} />
             </Grid>
           </Grid>
         </DialogTitle>
@@ -901,8 +878,6 @@ const EventDetails = ({
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    size="small"
-                    variant="outlined"
                     label="Title"
                     value={eventForm.title}
                     onChange={(e: React.FormEvent<HTMLFormElement>) =>
@@ -929,8 +904,6 @@ const EventDetails = ({
                         TextFieldComponent={(props) => (
                           <TextField
                             {...props}
-                            size="small"
-                            variant="outlined"
                             label="Start Date"
                             InputProps={{
                               endAdornment: (
@@ -948,9 +921,7 @@ const EventDetails = ({
                     <TextField
                       className={classes.timeInput}
                       required
-                      size="small"
                       label="Start Time"
-                      variant="outlined"
                       value={convertTimeStringToNumber(eventForm.startTime)}
                       InputProps={{
                         inputComponent: NumberFormatTime as any,
@@ -989,8 +960,6 @@ const EventDetails = ({
                         TextFieldComponent={(props) => (
                           <TextField
                             {...props}
-                            size="small"
-                            variant="outlined"
                             label="End Date"
                             InputProps={{
                               endAdornment: (
@@ -1008,9 +977,7 @@ const EventDetails = ({
                     <TextField
                       className={classes.timeInput}
                       required
-                      size="small"
                       label="End Time"
-                      variant="outlined"
                       value={convertTimeStringToNumber(eventForm.endTime)}
                       InputProps={{
                         inputComponent: NumberFormatTime as any,
@@ -1049,8 +1016,6 @@ const EventDetails = ({
                 <Grid item xs={9}>
                   <TextField
                     fullWidth
-                    size="small"
-                    variant="outlined"
                     label="Calendar"
                     value={calendarChips}
                   />
@@ -1077,8 +1042,6 @@ const EventDetails = ({
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    size="small"
-                    variant="outlined"
                     label="Address"
                     value={eventForm.location}
                     onChange={(e: React.FormEvent<HTMLFormElement>) =>
@@ -1096,8 +1059,6 @@ const EventDetails = ({
                         <TextField
                           onClick={() => setOpen(false)}
                           fullWidth
-                          size="small"
-                          variant="outlined"
                           label="Mail"
                           InputProps={{
                             className: classes.multilineColor,
@@ -1157,8 +1118,6 @@ const EventDetails = ({
                           fullWidth
                           value={notify.period}
                           type="number"
-                          size="small"
-                          variant="outlined"
                           onChange={(e) =>
                             dispatch({
                               field: `notification:${index}:period`,
@@ -1189,15 +1148,13 @@ const EventDetails = ({
                         </FormControl>
                       </Grid>
                       <Grid item xs={2}>
-                        <IconButton
-                          onClick={() => {
-                            dispatch({
-                              field: `notification:${index}:remove`,
-                            });
-                          }}
-                        >
-                          <CloseOutlinedIcon className={classes.closeIcon} />
-                        </IconButton>
+                        <IconBtn
+                        onClick={() => {
+                          dispatch({
+                            field: `notification:${index}:remove`,
+                          });
+                        }}
+                      ></IconBtn>
                       </Grid>
                     </>
                   ),
@@ -1251,8 +1208,6 @@ const EventDetails = ({
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    size="small"
-                    variant="outlined"
                     label="Note"
                     multiline
                     rows={5}
