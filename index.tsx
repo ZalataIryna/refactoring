@@ -15,14 +15,11 @@ import {
   CircularProgress,
   Snackbar,
   Box,
-  InputAdornment,
 } from "@material-ui/core";
 import MuiAlert from "@material-ui/lab/Alert";
 
-import { PdfPreview } from "./";
-
-import { MuiPickersUtilsProvider, DatePicker } from "@material-ui/pickers";
-
+import { PdfPreview } from ".";
+import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import "date-fns";
 import DateFnsUtils from "@date-io/date-fns";
 import moment from "moment";
@@ -52,20 +49,21 @@ import {
   useGetNotificationSettingsByTagLazyQuery,
   EventNotificationInput,
   GetSharedAccessQuery,
-} from "../graphql/generated";
+} from "./graphql/generated";
 
-import convertMStoTimeLeft from "../common/convertMSToTimeLeft";
-import messageFragment from '../graphql/schema'
+import convertMStoTimeLeft from "./common/convertMSToTimeLeft";
+import messageFragment from "./graphql/schema";
 
-import TextField from "./TextField";
-import ChipsInput from "./ChipsInput";
-import { ReactComponent as DropdownIcon } from "../icons/dropdownRegular.svg";
-import NumberFormatTime from "../common/NumberFormatTime";
+import TextField from "./components/TextField";
+import ChipsInput from "./components/ChipsInput";
+import NumberFormatTime from "./common/NumberFormatTime";
 import { Link } from "react-router-dom";
-import EventDeleteModal from "./EventDeleteModal";
-import IconBtn from "./IconBtn";
+import EventDeleteModal from "./components/EventDeleteModal";
+import IconBtn from "./components/IconBtn";
+import Btn from "./components/Button";
+import DatePickerComp from "./components/DatePicker";
 
-import useStyles from '../common/Styles'
+import useStyles from "./common/Styles";
 
 type EventDetailsProps = {
   event?: Event;
@@ -113,7 +111,7 @@ export const createLink = (
   userEmail: string,
   messageId: string | null | undefined,
   isDone: boolean | null | undefined,
-  isDeleted: boolean | null | undefined,
+  isDeleted: boolean | null | undefined
 ): string => {
   if (isDone) {
     return `/messages/done/${messageId}`;
@@ -207,16 +205,16 @@ const EventDetails = ({
     ...message?.eventInfo,
     ...event,
     startDate: moment(
-      event?.startTime || message?.eventInfo?.startTime || now,
+      event?.startTime || message?.eventInfo?.startTime || now
     ).format("l"),
     startTime: moment(
-      event?.startTime || message?.eventInfo?.startTime || now,
+      event?.startTime || message?.eventInfo?.startTime || now
     ).format("HH:mm"),
     endTime: moment(
-      event?.endTime || message?.eventInfo?.endTime || oneHourFuture,
+      event?.endTime || message?.eventInfo?.endTime || oneHourFuture
     ).format("HH:mm"),
     endDate: moment(
-      event?.endTime || message?.eventInfo?.startTime || nowDateEndDate,
+      event?.endTime || message?.eventInfo?.startTime || nowDateEndDate
     ).format("l"),
     notifications: notifications,
   };
@@ -224,7 +222,7 @@ const EventDetails = ({
   const reducer = (
     // TODO: Fix the types. In rush atm to demo this.
     state: any,
-    { field, value }: { field: string; value?: string },
+    { field, value }: { field: string; value?: string }
   ) => {
     if (field === "reset") {
       return initialEventForm;
@@ -243,7 +241,7 @@ const EventDetails = ({
         return {
           ...state,
           notifications: state.notifications.filter(
-            (el: NotificationItem, i: number) => i !== Number(index),
+            (el: NotificationItem, i: number) => i !== Number(index)
           ),
         };
       } else if (action === "periodType") {
@@ -280,7 +278,7 @@ const EventDetails = ({
       if (value) {
         const timeDif = differenceInMinutes(
           new Date(event?.endTime || oneHourFuture),
-          new Date(event?.startTime || now),
+          new Date(event?.startTime || now)
         );
 
         const parsedDate = parse(value, "HH:mm", new Date());
@@ -301,7 +299,7 @@ const EventDetails = ({
       if (value) {
         const timeDif = differenceInDays(
           new Date(event?.endTime || oneHourFuture),
-          new Date(event?.startTime || now),
+          new Date(event?.startTime || now)
         );
 
         const addDaysDate = addDays(new Date(value), timeDif);
@@ -381,12 +379,12 @@ const EventDetails = ({
   const normaliseEventForm = (): UpdateEventInput => {
     const startTime = moment(
       `${eventForm.startDate} ${eventForm.startTime}`,
-      "l HH:mm",
+      "l HH:mm"
     ).format();
 
     const endTime = moment(
       `${eventForm.endDate} ${eventForm.endTime}`,
-      "l HH:mm",
+      "l HH:mm"
     ).format();
 
     let startTimeUTC = startTime;
@@ -533,7 +531,7 @@ const EventDetails = ({
     const chipSharedAccessValues: string[] = sharedDataAccess?.sharedAccess
       ?.targetUsers
       ? sharedDataAccess.sharedAccess.targetUsers.map(
-          (user: User) => `${user?.name}'s Calendar`,
+          (user: User) => `${user?.name}'s Calendar`
         )
       : [];
 
@@ -541,7 +539,7 @@ const EventDetails = ({
     if (currentUser) {
       userCalendars =
         currentUser.eventCalendars.map(
-          (calendar: Calendar) => `${calendar.name}`,
+          (calendar: Calendar) => `${calendar.name}`
         ) || [];
     }
 
@@ -589,7 +587,7 @@ const EventDetails = ({
                   period: value.toString(),
                 });
               });
-            },
+            }
           );
         } else {
           sharedUsers.forEach((sharedUser) => {
@@ -603,7 +601,7 @@ const EventDetails = ({
       } else if (event?.notifications && event?.notifications?.length > 0) {
         event.notifications.forEach((notififcation) => {
           const { type, value } = convertMStoTimeLeft(
-            notififcation.notifyBefore,
+            notififcation.notifyBefore
           );
           const tsType = type as keyof typeof periodTypeMap;
           initialNotificationPeriod.push({
@@ -649,7 +647,7 @@ const EventDetails = ({
       });
     } else {
       const isAfter = moment(moment(eventForm.startDate).format("l")).isAfter(
-        eventForm.endDate,
+        eventForm.endDate
       );
 
       if (isAfter) {
@@ -698,7 +696,7 @@ const EventDetails = ({
     currentUser.email,
     messageId,
     isMessageDone,
-    isMessageDeleted,
+    isMessageDeleted
   );
 
   const handleClose = () => setIsOpenModalConfirm(false);
@@ -756,29 +754,11 @@ const EventDetails = ({
                 <div className={classes.dateRow}>
                   <div className={classes.dateCol}>
                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                      <DatePicker
-                        autoOk
-                        className={classes.dateInput}
-                        disableToolbar
-                        disablePast={event ? false : true}
-                        variant="inline"
-                        format="M/d/yyyy"
+                      <DatePickerComp
+                        event={event}
                         value={eventForm.startDate}
-                        inputVariant="outlined"
                         onChange={handleStartDateChange}
-                        TextFieldComponent={(props) => (
-                          <TextField
-                            {...props}
-                            label="Start Date"
-                            InputProps={{
-                              endAdornment: (
-                                <InputAdornment position="end">
-                                  <DropdownIcon />
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        )}
+                        label="Start Date"
                       />
                     </MuiPickersUtilsProvider>
                   </div>
@@ -806,15 +786,9 @@ const EventDetails = ({
                   </div>
                   <div className={classes.dateCol}>
                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                      <DatePicker
-                        autoOk
-                        className={classes.dateInput}
-                        disablePast={event ? false : true}
-                        disableToolbar
-                        variant="inline"
-                        format="M/d/yyyy"
+                      <DatePickerComp
+                        event={event}
                         value={eventForm.endDate}
-                        inputVariant="outlined"
                         onChange={(date) => {
                           if (!date) return;
                           dispatch({
@@ -822,18 +796,9 @@ const EventDetails = ({
                             value: moment(date).format("l"),
                           });
                         }}
+                        label="End Date"
                         TextFieldComponent={(props) => (
-                          <TextField
-                            {...props}
-                            label="End Date"
-                            InputProps={{
-                              endAdornment: (
-                                <InputAdornment position="end">
-                                  <DropdownIcon />
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
+                          <TextField {...props} label="End Date" />
                         )}
                       />
                     </MuiPickersUtilsProvider>
@@ -879,11 +844,7 @@ const EventDetails = ({
               </Grid>
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={9}>
-                  <TextField
-                    fullWidth
-                    label="Calendar"
-                    value={calendarChips}
-                  />
+                  <TextField fullWidth label="Calendar" value={calendarChips} />
                 </Grid>
                 <Grid
                   item
@@ -946,8 +907,6 @@ const EventDetails = ({
                           []
                         }
                         label="Category:"
-                        isLineType
-                        borderType="square"
                         withBorder
                       />
                     </Grid>
@@ -1014,18 +973,18 @@ const EventDetails = ({
                       </Grid>
                       <Grid item xs={2}>
                         <IconBtn
-                        onClick={() => {
-                          dispatch({
-                            field: `notification:${index}:remove`,
-                          });
-                        }}
-                      ></IconBtn>
+                          onClick={() => {
+                            dispatch({
+                              field: `notification:${index}:remove`,
+                            });
+                          }}
+                        ></IconBtn>
                       </Grid>
                     </>
-                  ),
+                  )
                 )}
                 <Grid item xs={12}>
-                  <Button
+                  <Btn
                     className={classes.addReminder}
                     onClick={() => {
                       dispatch({
@@ -1033,18 +992,15 @@ const EventDetails = ({
                       });
                     }}
                     disableRipple
-                  >
-                    Add Reminder
-                  </Button>
+                    title="Add Reminder"
+                  />
                 </Grid>
                 {files ? (
                   <>
                     <Grid item xs={12}>
                       <ChipsInput
-                        isLineType
                         type="files"
                         label="Attached File:"
-                        borderType="square"
                         onClick={handleChipClick}
                         value={
                           files.map((attachment) => attachment?.name || "") ||
@@ -1097,12 +1053,11 @@ const EventDetails = ({
                 {"Event update time goes here"}
               </Grid>
               <Grid item>
-                <Button
+                <Btn
                   className={classes.deleteButton}
                   onClick={() => setIsOpenModalConfirm(true)}
-                >
-                  Delete
-                </Button>
+                  title="Delete"
+                />
                 <Button
                   variant="contained"
                   color="primary"
