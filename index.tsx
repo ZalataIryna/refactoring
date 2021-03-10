@@ -12,21 +12,14 @@ import {
   FormControl,
   Select,
   MenuItem,
-  IconButton,
   CircularProgress,
   Snackbar,
   Box,
-  InputAdornment,
 } from "@material-ui/core";
 import MuiAlert from "@material-ui/lab/Alert";
 
-import { CloseOutlined as CloseOutlinedIcon } from "@material-ui/icons";
-
-import { PdfPreview } from "./";
-import { makeStyles } from "@material-ui/core/styles";
-import { MuiPickersUtilsProvider, DatePicker } from "@material-ui/pickers";
-import { red, blue } from "@material-ui/core/colors";
-
+import { PdfPreview } from ".";
+import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import "date-fns";
 import DateFnsUtils from "@date-io/date-fns";
 import moment from "moment";
@@ -56,158 +49,21 @@ import {
   useGetNotificationSettingsByTagLazyQuery,
   EventNotificationInput,
   GetSharedAccessQuery,
-} from "../graphql/generated";
+} from "./graphql/generated";
 
-import convertMStoTimeLeft from "../common/convertMSToTimeLeft";
-import { gql } from "@apollo/client";
+import convertMStoTimeLeft from "./common/convertMSToTimeLeft";
+import messageFragment from "./graphql/schema";
 
-import TextField from "./TextField";
-import ChipsInput from "./ChipsInput";
-import { ReactComponent as DropdownIcon } from "../icons/dropdownRegular.svg";
-import NumberFormatTime from "../common/NumberFormatTime";
+import TextField from "./components/TextField";
+import ChipsInput from "./components/ChipsInput";
+import NumberFormatTime from "./common/NumberFormatTime";
 import { Link } from "react-router-dom";
-import EventDeleteModal from "./EventDeleteModal";
+import EventDeleteModal from "./components/EventDeleteModal";
+import IconBtn from "./components/IconBtn";
+import Btn from "./components/Button";
+import DatePickerComp from "./components/DatePicker";
 
-const useStyles = makeStyles((theme) => ({
-  modal: {
-    maxWidth: "700px",
-  },
-  modalTitle: {
-    textAlign: "left",
-    padding: "20px 20px",
-  },
-  toContainer: {
-    textAlign: "center",
-  },
-  headerPart: {
-    marginBottom: "20px",
-  },
-  icon: {
-    color: "#707070",
-  },
-  closeIcon: {
-    color: "#D9D9D9",
-  },
-  addReminder: {
-    color: "#B7B7B7",
-    fontSize: "0.9em",
-    margin: "10px 0 10px 0",
-    textTransform: "uppercase",
-    padding: 0,
-    backgroundColor: "#fff",
-    "&:hover": {
-      background: "#fff",
-    },
-  },
-  actions: {
-    margin: "35px 0 20px 0",
-  },
-  linkStyles: {
-    textDecoration: "none",
-  },
-  multilineColor: {
-    color: "#2F6EE2",
-  },
-  lastUpdated: {
-    color: "#B0B1B2",
-    fontWeight: 600,
-  },
-  deleteButton: {
-    marginRight: theme.spacing(1.5),
-  },
-  fileChip: {
-    "& img": {
-      height: "70%",
-    },
-    "&:hover": {
-      background: "#e8e8e8",
-    },
-    background: "#F6F6F7",
-    border: "1px solid #DBDCDE",
-    borderRadius: "5px",
-  },
-  dateRow: {
-    display: "flex",
-    padding: "8px",
-    width: "100%",
-    justifyContent: "space-between",
-  },
-  dateCol: {
-    alignItems: "flex-end",
-    display: "flex",
-  },
-  dateInput: {
-    maxWidth: "120px",
-  },
-  timeInput: {
-    "& input": {
-      "&::webkit-inner-spin-button, &::-webkit-outer-spin-button": {
-        webkitAppearance: "none",
-        margin: "0",
-      },
-      paddingRight: "0",
-    },
-    width: 120,
-  },
-  conflictError: {
-    color: "rgb(247, 65, 53)",
-  },
-  chipRoot: {
-    background: "#ffffff",
-  },
-  iconButtonRoot: {
-    padding: 0,
-    marginBottom: theme.spacing(0.5),
-  },
-  switchRoot: {
-    width: 48,
-    height: 28,
-    padding: 0,
-    display: "flex",
-  },
-  switchBase: {
-    padding: 4,
-    color: theme.palette.grey[500],
-    "&$checked": {
-      transform: "translateX(12px)",
-      color: theme.palette.common.white,
-      "& + $track": {
-        opacity: 1,
-        backgroundColor: "red",
-      },
-    },
-  },
-  paddingBottom: {
-    paddingBottom: 4,
-  },
-  switchThumb: {
-    width: 20,
-    height: 20,
-    boxShadow: "none",
-    backgroundColor: theme.palette.common.white,
-  },
-  switchTrack: {
-    border: "none",
-    borderRadius: 30,
-    opacity: 1,
-    backgroundColor: theme.palette.divider,
-  },
-  switchChecked: {},
-  titleModalConfirm: {
-    textAlign: "center",
-    paddingBottom: "0px",
-    paddingTop: "35px",
-  },
-  colorDelBtn: {
-    color: red["A700"],
-  },
-  hoverDelBtn: {
-    "&:hover": {
-      background: blue[800],
-      color: blue[50],
-    },
-  },
-}));
+import useStyles from "./common/Styles";
 
 type EventDetailsProps = {
   event?: Event;
@@ -255,7 +111,7 @@ export const createLink = (
   userEmail: string,
   messageId: string | null | undefined,
   isDone: boolean | null | undefined,
-  isDeleted: boolean | null | undefined,
+  isDeleted: boolean | null | undefined
 ): string => {
   if (isDone) {
     return `/messages/done/${messageId}`;
@@ -265,15 +121,6 @@ export const createLink = (
     return `/inbox/${userEmail}/${messageId}`;
   }
 };
-
-const messageFragment = gql`
-  fragment MyMessage on Message {
-    id
-    event {
-      id #id should be for correct render
-    }
-  }
-`;
 
 const EventDetails = ({
   event,
@@ -358,16 +205,16 @@ const EventDetails = ({
     ...message?.eventInfo,
     ...event,
     startDate: moment(
-      event?.startTime || message?.eventInfo?.startTime || now,
+      event?.startTime || message?.eventInfo?.startTime || now
     ).format("l"),
     startTime: moment(
-      event?.startTime || message?.eventInfo?.startTime || now,
+      event?.startTime || message?.eventInfo?.startTime || now
     ).format("HH:mm"),
     endTime: moment(
-      event?.endTime || message?.eventInfo?.endTime || oneHourFuture,
+      event?.endTime || message?.eventInfo?.endTime || oneHourFuture
     ).format("HH:mm"),
     endDate: moment(
-      event?.endTime || message?.eventInfo?.startTime || nowDateEndDate,
+      event?.endTime || message?.eventInfo?.startTime || nowDateEndDate
     ).format("l"),
     notifications: notifications,
   };
@@ -375,7 +222,7 @@ const EventDetails = ({
   const reducer = (
     // TODO: Fix the types. In rush atm to demo this.
     state: any,
-    { field, value }: { field: string; value?: string },
+    { field, value }: { field: string; value?: string }
   ) => {
     if (field === "reset") {
       return initialEventForm;
@@ -394,7 +241,7 @@ const EventDetails = ({
         return {
           ...state,
           notifications: state.notifications.filter(
-            (el: NotificationItem, i: number) => i !== Number(index),
+            (el: NotificationItem, i: number) => i !== Number(index)
           ),
         };
       } else if (action === "periodType") {
@@ -431,7 +278,7 @@ const EventDetails = ({
       if (value) {
         const timeDif = differenceInMinutes(
           new Date(event?.endTime || oneHourFuture),
-          new Date(event?.startTime || now),
+          new Date(event?.startTime || now)
         );
 
         const parsedDate = parse(value, "HH:mm", new Date());
@@ -452,7 +299,7 @@ const EventDetails = ({
       if (value) {
         const timeDif = differenceInDays(
           new Date(event?.endTime || oneHourFuture),
-          new Date(event?.startTime || now),
+          new Date(event?.startTime || now)
         );
 
         const addDaysDate = addDays(new Date(value), timeDif);
@@ -532,12 +379,12 @@ const EventDetails = ({
   const normaliseEventForm = (): UpdateEventInput => {
     const startTime = moment(
       `${eventForm.startDate} ${eventForm.startTime}`,
-      "l HH:mm",
+      "l HH:mm"
     ).format();
 
     const endTime = moment(
       `${eventForm.endDate} ${eventForm.endTime}`,
-      "l HH:mm",
+      "l HH:mm"
     ).format();
 
     let startTimeUTC = startTime;
@@ -684,7 +531,7 @@ const EventDetails = ({
     const chipSharedAccessValues: string[] = sharedDataAccess?.sharedAccess
       ?.targetUsers
       ? sharedDataAccess.sharedAccess.targetUsers.map(
-          (user: User) => `${user?.name}'s Calendar`,
+          (user: User) => `${user?.name}'s Calendar`
         )
       : [];
 
@@ -692,7 +539,7 @@ const EventDetails = ({
     if (currentUser) {
       userCalendars =
         currentUser.eventCalendars.map(
-          (calendar: Calendar) => `${calendar.name}`,
+          (calendar: Calendar) => `${calendar.name}`
         ) || [];
     }
 
@@ -740,7 +587,7 @@ const EventDetails = ({
                   period: value.toString(),
                 });
               });
-            },
+            }
           );
         } else {
           sharedUsers.forEach((sharedUser) => {
@@ -754,7 +601,7 @@ const EventDetails = ({
       } else if (event?.notifications && event?.notifications?.length > 0) {
         event.notifications.forEach((notififcation) => {
           const { type, value } = convertMStoTimeLeft(
-            notififcation.notifyBefore,
+            notififcation.notifyBefore
           );
           const tsType = type as keyof typeof periodTypeMap;
           initialNotificationPeriod.push({
@@ -800,7 +647,7 @@ const EventDetails = ({
       });
     } else {
       const isAfter = moment(moment(eventForm.startDate).format("l")).isAfter(
-        eventForm.endDate,
+        eventForm.endDate
       );
 
       if (isAfter) {
@@ -849,7 +696,7 @@ const EventDetails = ({
     currentUser.email,
     messageId,
     isMessageDone,
-    isMessageDeleted,
+    isMessageDeleted
   );
 
   const handleClose = () => setIsOpenModalConfirm(false);
@@ -878,14 +725,7 @@ const EventDetails = ({
           <Grid container justify="space-between" alignItems="center">
             <Grid item>{message ? "Create new event" : "Event Details"}</Grid>
             <Grid item>
-              <IconButton
-                classes={{
-                  root: classes.iconButtonRoot,
-                }}
-                onClick={() => setOpen(false)}
-              >
-                <CloseOutlinedIcon />
-              </IconButton>
+              <IconBtn onClick={() => setOpen(false)} />
             </Grid>
           </Grid>
         </DialogTitle>
@@ -901,8 +741,6 @@ const EventDetails = ({
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    size="small"
-                    variant="outlined"
                     label="Title"
                     value={eventForm.title}
                     onChange={(e: React.FormEvent<HTMLFormElement>) =>
@@ -916,31 +754,11 @@ const EventDetails = ({
                 <div className={classes.dateRow}>
                   <div className={classes.dateCol}>
                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                      <DatePicker
-                        autoOk
-                        className={classes.dateInput}
-                        disableToolbar
-                        disablePast={event ? false : true}
-                        variant="inline"
-                        format="M/d/yyyy"
+                      <DatePickerComp
+                        event={event}
                         value={eventForm.startDate}
-                        inputVariant="outlined"
                         onChange={handleStartDateChange}
-                        TextFieldComponent={(props) => (
-                          <TextField
-                            {...props}
-                            size="small"
-                            variant="outlined"
-                            label="Start Date"
-                            InputProps={{
-                              endAdornment: (
-                                <InputAdornment position="end">
-                                  <DropdownIcon />
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        )}
+                        label="Start Date"
                       />
                     </MuiPickersUtilsProvider>
                   </div>
@@ -948,9 +766,7 @@ const EventDetails = ({
                     <TextField
                       className={classes.timeInput}
                       required
-                      size="small"
                       label="Start Time"
-                      variant="outlined"
                       value={convertTimeStringToNumber(eventForm.startTime)}
                       InputProps={{
                         inputComponent: NumberFormatTime as any,
@@ -970,15 +786,9 @@ const EventDetails = ({
                   </div>
                   <div className={classes.dateCol}>
                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                      <DatePicker
-                        autoOk
-                        className={classes.dateInput}
-                        disablePast={event ? false : true}
-                        disableToolbar
-                        variant="inline"
-                        format="M/d/yyyy"
+                      <DatePickerComp
+                        event={event}
                         value={eventForm.endDate}
-                        inputVariant="outlined"
                         onChange={(date) => {
                           if (!date) return;
                           dispatch({
@@ -986,20 +796,9 @@ const EventDetails = ({
                             value: moment(date).format("l"),
                           });
                         }}
+                        label="End Date"
                         TextFieldComponent={(props) => (
-                          <TextField
-                            {...props}
-                            size="small"
-                            variant="outlined"
-                            label="End Date"
-                            InputProps={{
-                              endAdornment: (
-                                <InputAdornment position="end">
-                                  <DropdownIcon />
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
+                          <TextField {...props} label="End Date" />
                         )}
                       />
                     </MuiPickersUtilsProvider>
@@ -1008,9 +807,7 @@ const EventDetails = ({
                     <TextField
                       className={classes.timeInput}
                       required
-                      size="small"
                       label="End Time"
-                      variant="outlined"
                       value={convertTimeStringToNumber(eventForm.endTime)}
                       InputProps={{
                         inputComponent: NumberFormatTime as any,
@@ -1047,13 +844,7 @@ const EventDetails = ({
               </Grid>
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={9}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    variant="outlined"
-                    label="Calendar"
-                    value={calendarChips}
-                  />
+                  <TextField fullWidth label="Calendar" value={calendarChips} />
                 </Grid>
                 <Grid
                   item
@@ -1077,8 +868,6 @@ const EventDetails = ({
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    size="small"
-                    variant="outlined"
                     label="Address"
                     value={eventForm.location}
                     onChange={(e: React.FormEvent<HTMLFormElement>) =>
@@ -1096,8 +885,6 @@ const EventDetails = ({
                         <TextField
                           onClick={() => setOpen(false)}
                           fullWidth
-                          size="small"
-                          variant="outlined"
                           label="Mail"
                           InputProps={{
                             className: classes.multilineColor,
@@ -1120,8 +907,6 @@ const EventDetails = ({
                           []
                         }
                         label="Category:"
-                        isLineType
-                        borderType="square"
                         withBorder
                       />
                     </Grid>
@@ -1157,8 +942,6 @@ const EventDetails = ({
                           fullWidth
                           value={notify.period}
                           type="number"
-                          size="small"
-                          variant="outlined"
                           onChange={(e) =>
                             dispatch({
                               field: `notification:${index}:period`,
@@ -1189,21 +972,19 @@ const EventDetails = ({
                         </FormControl>
                       </Grid>
                       <Grid item xs={2}>
-                        <IconButton
+                        <IconBtn
                           onClick={() => {
                             dispatch({
                               field: `notification:${index}:remove`,
                             });
                           }}
-                        >
-                          <CloseOutlinedIcon className={classes.closeIcon} />
-                        </IconButton>
+                        ></IconBtn>
                       </Grid>
                     </>
-                  ),
+                  )
                 )}
                 <Grid item xs={12}>
-                  <Button
+                  <Btn
                     className={classes.addReminder}
                     onClick={() => {
                       dispatch({
@@ -1211,18 +992,15 @@ const EventDetails = ({
                       });
                     }}
                     disableRipple
-                  >
-                    Add Reminder
-                  </Button>
+                    title="Add Reminder"
+                  />
                 </Grid>
                 {files ? (
                   <>
                     <Grid item xs={12}>
                       <ChipsInput
-                        isLineType
                         type="files"
                         label="Attached File:"
-                        borderType="square"
                         onClick={handleChipClick}
                         value={
                           files.map((attachment) => attachment?.name || "") ||
@@ -1251,8 +1029,6 @@ const EventDetails = ({
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    size="small"
-                    variant="outlined"
                     label="Note"
                     multiline
                     rows={5}
@@ -1277,12 +1053,11 @@ const EventDetails = ({
                 {"Event update time goes here"}
               </Grid>
               <Grid item>
-                <Button
+                <Btn
                   className={classes.deleteButton}
                   onClick={() => setIsOpenModalConfirm(true)}
-                >
-                  Delete
-                </Button>
+                  title="Delete"
+                />
                 <Button
                   variant="contained"
                   color="primary"
